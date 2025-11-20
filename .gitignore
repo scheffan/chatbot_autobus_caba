@@ -1,0 +1,26 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# IDE / SO
+.vscode/
+.idea/
+*.log
+
+# Config sensible
+.env
+.env.*
+
+# Bases y datos generados
+data/gtfs.sqlite
+data/appdata.sqlite
+data/tts/
+data/gtfs/
+
+# Si más adelante agregás un GTFS chico de ejemplo, podés exceptuarlo:
+# !data/sample_gtfs/
