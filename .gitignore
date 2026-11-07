@@ -1,26 +1,25 @@
-# Entorno virtual
+# Python
 .venv/
-venv/
-
-# Python cache
 __pycache__/
 *.py[cod]
-*.pyo
+.pytest_cache/
+
+# Node / Cloudflare
+node_modules/
+.wrangler/
+dist/
+
+# Datos generados (los arma el workflow "Publicar")
+*.zip
+web/datos/
+worker/datos/
+salida/
+sitio/
 
 # IDE / SO
 .vscode/
 .idea/
 *.log
-
-# Config sensible
 .env
 .env.*
-
-# Bases y datos generados
-data/gtfs.sqlite
-data/appdata.sqlite
-data/tts/
-data/gtfs/
-
-# Si más adelante agregás un GTFS chico de ejemplo, podés exceptuarlo:
-# !data/sample_gtfs/
+.dev.vars

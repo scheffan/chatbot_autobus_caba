@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  datos:
+    name: Armado de datos (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest
+      - run: pytest -q tests/datos
+
+  motor:
+    name: Buscador y bot (JavaScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - name: El Worker compila
+        run: |
+          mkdir -p worker/datos
+          node -e "import('./tests/motor/red-de-prueba.js').then(m => { const fs = require('fs'); fs.writeFileSync('worker/datos/red.json', JSON.stringify(m.datosDePrueba())); fs.writeFileSync('worker/datos/referencias.json', JSON.stringify(m.LUGARES)); })"
+          npx --yes wrangler@4.156.2 deploy --dry-run --outdir dist

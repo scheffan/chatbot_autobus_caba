@@ -1,171 +1,88 @@
-# 🚌 Colectivos Demo Plus – Planificador + Chatbot
+# 🚌 Bondi CABA
 
-Proyecto demo de planificador de colectivos para la Ciudad de Buenos Aires, construido sobre:
+**¿Qué colectivo me tomo?** Escribís de dónde salís y adónde vas, y te dice qué línea tomar, en qué parada, cada cuánto pasa y dónde bajarte, con referencias para ubicarte ("frente al Obelisco", "cerca del Banco Nación").
 
-- Backend **FastAPI**
-- Datos oficiales **GTFS** de colectivos CABA
-- Chat estilo asistente (web y Telegram)
-- Síntesis de voz (TTS) local en Windows
+- 🌐 **Web:** [scheffan.github.io/chatbot_autobus_caba](https://scheffan.github.io/chatbot_autobus_caba/)
+- 💬 **Telegram:** [@bondicaba_bot](https://t.me/bondicaba_bot)
 
-El objetivo es tener un ejemplo completo de **chatbot de transporte** que use datos reales.
+[![Tests](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/tests.yml/badge.svg)](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/tests.yml)
+[![Publicar](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/publicar.yml/badge.svg)](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/publicar.yml)
 
----
+## Cómo se usa
 
-## 🚀 Funcionalidades
+En Telegram le escribís como le hablarías a alguien:
 
-- Búsqueda de rutas entre dos direcciones (ej: "ir de Corrientes 900 a Plaza de Mayo").
-- Consulta de **próximas salidas** y horarios.
-- Manejo de preferencias de usuario (modo rápido / balanceado, favoritos hogar/trabajo, etc.).
-- Interfaz web de chat.
-- Bot de Telegram (opcional).
-- TTS local (opcional, solo Windows).
+> quiero ir de Corrientes 800 a Plaza Italia
 
-Los datos de colectivos provienen de:
+> cómo llego a Rivadavia 6300 desde Constitución
 
-- Dataset oficial **“colectivos-gtfs”** del Gobierno de la Ciudad de Buenos Aires.
-- Versión **simplificada por frecuencias** publicada en el TUMI Datahub.
-
----
-
-## 📂 Estructura del proyecto (resumen)
-
-```text
-colectivos_demo_plus/
-├── app/
-│   ├── main.py
-│   ├── planner.py
-│   ├── intents.py
-│   ├── geocode.py
-│   ├── storage.py
-│   └── ...
-├── web/
-│   └── index.html
-├── tools/
-│   └── gtfs_load.py
-├── data/
-│   ├── .gitkeep
-│   └── (GTFS aquí)
-├── telegram_bot.py
-├── requirements.txt
-├── .env.example
-└── README.md
-```
-
----
-
-## ✅ Requisitos
-
-- **Windows 10/11** (recomendado)
-- **Python 3.10+**
-- Dependencias del proyecto via `requirements.txt`
-
----
-
-## 1️⃣ Clonar el repositorio
-
-```powershell
-git clone https://github.com/TU_USUARIO/colectivos_demo_plus.git
-cd colectivos_demo_plus
-```
-
----
-
-## 2️⃣ Crear y activar el entorno virtual
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
----
-
-## 3️⃣ Instalar dependencias
-
-```powershell
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
----
-
-## 4️⃣ Configurar `.env`
-
-```env
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_WEBHOOK_SECRET=clave
-OPENAI_API_KEY=
-CITY_NAME=CABA
-MODE=balanced
-
-GTFS_SQLITE=data/gtfs.sqlite
-APPDATA_SQLITE=data/appdata.sqlite
-
-TTS_ENABLED=1
-TTS_VOICE=es-ES
-TTS_DIR=data/tts
-TTS_RATE=0
-TTS_VOLUME=1
-```
-
-Copiar plantilla:
-
-```powershell
-copy .env.example .env
-```
-
----
-
-## 5️⃣ Descargar datos GTFS oficiales
-
-### Fuente 1: Colectivos CABA  
-https://data.buenosaires.gob.ar/fi/dataset/colectivos-gtfs
-
-### Fuente 2: Dataset por frecuencias (opcional)  
-https://hub.tumidata.org/dataset/buses_gtfs_frequency_buenos_aires
-
-Extraer todos los `.txt` en:
+O le mandás tu ubicación 📍 y después le decís adónde vas. Te contesta algo así:
 
 ```
-data/gtfs/
+🚌 Del Obelisco a la Plaza Italia
+
+Opción 1: 59 · unos 24 min
+🚶 Caminá 2 cuadras hasta la parada de Lavalle 1059.
+🚌 Tomá el 59 hacia Int. Cnel. A. Ávalos y D. De Acassuso. Pasa cada 9 min aprox.
+⏱️ Viajás 14 minutos (14 paradas) y te bajás en Av. General Las Heras 4273.
+🚶 Caminá 1 cuadra hasta la Plaza Italia.
 ```
 
----
+Con un botón para ver el recorrido en el mapa de la web.
 
-## 6️⃣ Generar `gtfs.sqlite` (~4 GB)
+## Cómo funciona
 
-```powershell
-python tools/gtfs_load.py --gtfs_dir data/gtfs --sqlite data/gtfs.sqlite
+1. **Datos.** El GTFS oficial de colectivos pesa 1,5 GB (más de 30 millones de horarios). `datos/construir_red.py` lo achica a un JSON de ~4 MB: cada recorrido con sus paradas, el tiempo típico entre ellas y cuántos colectivos pasan por hora en días hábiles, sábados y domingos. `datos/construir_referencias.py` baja de OpenStreetMap monumentos, plazas, estaciones, bancos y otros lugares para usarlos como referencia.
+2. **Búsqueda por anillos**, como la Guía T: busca paradas a 300 m de donde estás y de adonde vas; si no alcanza, agranda el anillo a 600, 900 y 1200 m. Arma viajes directos y, si conviene, con un trasbordo caminando hasta otra parada cercana. Suma caminata, espera según la frecuencia de esa hora y viaje, y elige opciones con líneas distintas.
+3. **Direcciones.** Primero busca en los lugares conocidos ("Obelisco"), después en el normalizador de direcciones de la Ciudad (USIG, que entiende alturas y esquinas) y por último en Nominatim (OpenStreetMap) para el resto del AMBA.
+
+El mismo buscador (`motor/`) corre en el navegador para la web y en un Worker de Cloudflare para el bot, así que todo es gratis y no hay servidor que mantener.
+
+```
+datos/     scripts en Python que arman los JSON (solo biblioteca estándar)
+motor/     buscador, textos y geocodificación (JavaScript, sin dependencias)
+web/       página con mapa (Leaflet + OpenStreetMap)
+worker/    webhook del bot de Telegram (Cloudflare Workers)
+tests/     pytest para los datos y node --test para el buscador y el bot
 ```
 
----
+## Correrlo en tu compu
 
-## 7️⃣ Ejecutar el backend
+Necesitás Python 3.10+ y Node 20+.
 
-```powershell
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```bash
+# 1. Bajar el GTFS y armar los datos (tarda unos minutos)
+curl -L -o gtfs.zip https://files.mobilitydatabase.org/mdb-1220/latest.zip
+mkdir -p web/datos
+python datos/construir_red.py gtfs.zip web/datos/red.json
+python datos/construir_referencias.py web/datos/referencias.json
+
+# 2. Levantar la web
+cp -r motor web/motor
+python -m http.server 8000 -d web
+# y abrir http://localhost:8000
 ```
 
-Abrir:
-http://localhost:8000
+Tests:
 
----
-
-## 8️⃣ Ejecutar el bot de Telegram (opcional)
-
-```powershell
-python telegram_bot.py
+```bash
+pip install pytest && pytest -q tests/datos
+npm test
 ```
 
----
+## Publicación
 
-## 🧪 Pruebas rápidas
+El workflow **Publicar** corre con cada cambio en `main` y todos los lunes: baja el GTFS, arma los datos, publica la web en GitHub Pages y sube el bot a Cloudflare. Para el bot hacen falta dos secretos del repo (*Settings → Secrets and variables → Actions*):
 
-```powershell
-python bench_request.py
-```
+| Secreto | De dónde sale |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare → *My Profile → API Tokens*, plantilla "Edit Cloudflare Workers" |
+| `TELEGRAM_TOKEN` | El token que da [@BotFather](https://t.me/BotFather) |
 
----
+El workflow conecta solo el webhook de Telegram con el Worker. Sin esos secretos la web se publica igual.
 
-## 📄 Licencia
+## Sobre los datos
 
-Distribuido bajo la licencia MIT.
+Los recorridos y paradas salen del [GTFS de colectivos de Buenos Aires Data](https://data.buenosaires.gob.ar/dataset/colectivos-gtfs). El último publicado es de **septiembre de 2019**, así que puede haber cambios de recorrido posteriores que no aparezcan. Los tiempos son estimados a partir de los horarios programados, no en tiempo real.
+
+Lugares y mapa: © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright).

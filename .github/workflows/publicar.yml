@@ -1,0 +1,132 @@
+name: Publicar
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 7 * * 1' # todos los lunes, por si la Ciudad actualiza los datos
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: true
+
+jobs:
+  datos:
+    name: Armar los datos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bajar el GTFS de colectivos
+        run: |
+          for url in \
+            "https://files.mobilitydatabase.org/mdb-1220/latest.zip" \
+            "https://cdn.buenosaires.gob.ar/datosabiertos/datasets/transporte-y-obras-publicas/colectivos-gtfs/colectivos-gtfs.zip"; do
+            echo "Probando $url"
+            if curl -fsSL --retry 3 -m 900 -o gtfs.zip "$url" && unzip -tq gtfs.zip > /dev/null; then
+              echo "Listo: $(du -h gtfs.zip | cut -f1)"; exit 0
+            fi
+          done
+          echo "::error::No se pudo bajar el GTFS"; exit 1
+      - name: Recorridos y paradas
+        run: |
+          mkdir -p salida
+          python datos/construir_red.py gtfs.zip salida/red.json
+      - name: Lugares de referencia (OpenStreetMap)
+        run: |
+          if ! python datos/construir_referencias.py salida/referencias.json; then
+            echo "::warning::No se pudieron bajar los lugares de OpenStreetMap; se publica sin referencias."
+            echo '[]' > salida/referencias.json
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: datos
+          path: salida/
+          retention-days: 7
+
+  web:
+    name: Web (GitHub Pages)
+    needs: datos
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: datos
+          path: salida
+      - name: Armar el sitio
+        run: |
+          mkdir -p sitio/datos
+          cp -r web/* sitio/
+          cp -r motor sitio/motor
+          cp salida/*.json sitio/datos/
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sitio
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  bot:
+    name: Bot de Telegram (Cloudflare)
+    needs: datos
+    runs-on: ubuntu-latest
+    env:
+      TIENE_CLAVES: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.TELEGRAM_TOKEN != '' }}
+    steps:
+      - name: Avisar si faltan los secretos
+        if: env.TIENE_CLAVES != 'true'
+        run: echo "::warning::Faltan los secretos CLOUDFLARE_API_TOKEN o TELEGRAM_TOKEN. La web se publica igual, pero el bot no."
+      - uses: actions/checkout@v4
+        if: env.TIENE_CLAVES == 'true'
+      - uses: actions/download-artifact@v4
+        if: env.TIENE_CLAVES == 'true'
+        with:
+          name: datos
+          path: worker/datos
+      - name: Secreto del webhook
+        if: env.TIENE_CLAVES == 'true'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          # Se deriva del token: así no hace falta guardar otro secreto más.
+          SECRETO=$(printf '%s' "webhook:$TELEGRAM_TOKEN" | sha256sum | cut -c1-48)
+          echo "::add-mask::$SECRETO"
+          echo "TELEGRAM_SECRETO=$SECRETO" >> "$GITHUB_ENV"
+      - name: Publicar el Worker
+        id: deploy
+        if: env.TIENE_CLAVES == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: '4.156.2'
+          secrets: |
+            TELEGRAM_SECRETO
+      - name: Conectar Telegram con el Worker
+        if: env.TIENE_CLAVES == 'true'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          URL_WORKER: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          API="https://api.telegram.org/bot$TELEGRAM_TOKEN"
+          jq -n --arg url "${URL_WORKER%/}/telegram" --arg secreto "$TELEGRAM_SECRETO" \
+            '{url: $url, secret_token: $secreto, allowed_updates: ["message"], drop_pending_updates: true}' \
+            | curl -fsS -H 'Content-Type: application/json' -d @- "$API/setWebhook" | jq -r '.description'
+          jq -n '{commands: [{command: "start", description: "Cómo usar el bot"}, {command: "ayuda", description: "Ejemplos de pedidos"}]}' \
+            | curl -fsS -H 'Content-Type: application/json' -d @- "$API/setMyCommands" > /dev/null
+          jq -n '{description: "Decime de dónde salís y adónde vas, y te digo qué colectivo tomar en Buenos Aires, dónde está la parada y cada cuánto pasa."}' \
+            | curl -fsS -H 'Content-Type: application/json' -d @- "$API/setMyDescription" > /dev/null
+          curl -fsS "$API/getWebhookInfo" | jq '{url: .result.url, pendientes: .result.pending_update_count, ultimo_error: .result.last_error_message}'
