@@ -1,0 +1,14 @@
+name = "bondicaba"
+main = "worker/index.js"
+workers_dev = true
+preview_urls = false
+compatibility_date = "2026-10-01"
+
+[observability]
+enabled = false
+
+[vars]
+URL_WEB = "https://scheffan.github.io/chatbot_autobus_caba/"
+
+# El secreto del webhook lo carga el workflow "Publicar":
+#   npx wrangler secret put TELEGRAM_SECRETO

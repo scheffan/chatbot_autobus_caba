@@ -3,298 +3,48 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Colectivos LLM TTS</title>
-  <style>
-    :root{
-      --bg:#0b0f14;
-      --panel:#0f1521;
-      --panel-2:#101827;
-      --ink:#e8eef6;
-      --ink-soft:#b7c3d6;
-      --bbva:#1464a5;     /* azul BBVA */
-      --bbva-2:#0f4f84;   /* hover */
-      --chip:#122038;
-      --chip-brd:#1e2a3a;
-      --bot:#0f1726;
-      --bot-brd:#1b2740;
-      --me:#152235;
-      --me-brd:#254066;
-      --ok:#19a974;
-      --warn:#ffb020;
-      --err:#ff6b6b;
-      --muted:#93a4bf;
-      --radius:14px;
-      --shadow:0 8px 24px rgba(0,0,0,.28);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-      background:linear-gradient(180deg,#0b0f14 0%, #0c111a 100%);
-      color:var(--ink);
-    }
-
-    /* Header */
-    header{
-      position:sticky; top:0; z-index:5;
-      background:rgba(10,15,22,.7); backdrop-filter:saturate(1.2) blur(8px);
-      border-bottom:1px solid #152237;
-    }
-    .bar{
-      max-width:1000px; margin:0 auto; padding:14px 16px; display:flex; align-items:center; gap:12px;
-    }
-    .logo{
-      width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#1671ba,#0b3d66);
-      display:grid;place-items:center;color:white;font-weight:700;
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.09), var(--shadow);
-    }
-    .title{font-weight:700;letter-spacing:.2px}
-    .subtitle{font-size:12px;color:var(--ink-soft)}
-
-    /* Actions */
-    .actions{
-      max-width:1000px; margin:10px auto 0; padding:0 16px 8px; display:flex; flex-wrap:wrap; gap:8px;
-    }
-    .chip{
-      border:1px solid var(--chip-brd); background:var(--chip);
-      color:var(--ink); padding:8px 12px; border-radius:999px; cursor:pointer;
-      font-size:14px; transition:all .15s ease;
-    }
-    .chip:hover{border-color:#2b3a55;background:#15243d}
-    .chip.primary{background:var(--bbva);border-color:transparent}
-    .chip.primary:hover{background:var(--bbva-2)}
-    .hint{margin-left:auto;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px}
-
-    /* Main layout */
-    .wrap{max-width:1000px;margin:0 auto;padding:10px 16px 110px}
-    #out{display:flex;flex-direction:column;gap:12px}
-    .msg{
-      max-width:78%;
-      border-radius:var(--radius);
-      padding:12px 14px; line-height:1.35; white-space:pre-wrap; word-wrap:break-word;
-      border:1px solid transparent;
-      box-shadow:0 2px 12px rgba(0,0,0,.28);
-    }
-    .bot{background:var(--bot); border-color:var(--bot-brd)}
-    .me{background:var(--me); border-color:var(--me-brd); margin-left:auto}
-    .sys{background:#0c1424;border-color:#1b2a45;color:var(--muted); font-size:13px; align-self:center; max-width:640px}
-    .msg h4{margin:0 0 6px 0; font-size:14px; color:#cfe2ff}
-    .meta{display:flex;gap:10px;margin-top:8px;font-size:12px;color:var(--muted)}
-    audio{width:100%; margin-top:8px}
-
-    /* Composer */
-    .composer{
-      position:fixed; left:0; right:0; bottom:0; z-index:10;
-      background:linear-gradient(180deg, rgba(11,15,20,0) 0%, #0b0f14 35%);
-      padding:14px 16px 18px;
-    }
-    .composer-inner{
-      max-width:1000px; margin:0 auto; background:var(--panel); border:1px solid #1b2940;
-      border-radius:16px; padding:8px; display:flex; gap:8px; box-shadow:var(--shadow);
-    }
-    .input{
-      flex:1; display:flex; align-items:center; gap:8px; padding:10px 12px;
-      background:var(--panel-2); border:1px solid #1a2740; border-radius:12px;
-    }
-    #text{
-      width:100%; border:none; outline:none; background:transparent; color:var(--ink);
-      font-size:15px;
-    }
-    .send{
-      padding:11px 18px; border:none; border-radius:12px; cursor:pointer;
-      background:var(--bbva); color:white; font-weight:600; letter-spacing:.2px;
-      transition:all .15s ease;
-    }
-    .send:hover{background:var(--bbva-2)}
-    .send:disabled{opacity:.6; cursor:not-allowed}
-    .typing{display:inline-block; min-width:28px}
-    .dot{display:inline-block; width:6px;height:6px;border-radius:50%;background:#c9d6ea;margin:0 2px;opacity:.25;animation:b 1.2s infinite}
-    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-    @keyframes b{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:.9;transform:translateY(-2px)}}
-
-    /* Small screens */
-    @media (max-width:600px){
-      .msg{max-width:92%}
-      .hint{display:none}
-    }
-
-    /* === mejoras de render === */
-    .msg .line{display:block; margin:4px 0;}
-    .msg .line.option{margin:10px 0 10px;} /* más aire entre opciones */
-    .msg .line.step{margin:8px 0 8px;}     /* más aire entre pasos */
-    .msg strong{font-weight:700;}
-  </style>
+  <title>Bondi CABA</title>
+  <meta name="description" content="Cómo llegar en colectivo por Buenos Aires: escribís de dónde y adónde, y te dice qué bondi tomar." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚌</text></svg>" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="estilos.css" />
 </head>
 <body>
-  <header>
-    <div class="bar">
-      <div class="logo">🚌</div>
-      <div>
-        <div class="title">Colectivos LLM TTS</div>
-        <div class="subtitle">Probá: <code>ir de Corrientes 800 CABA a Av. Rivadavia 6300 CABA</code></div>
-      </div>
-      <div class="hint">Endpoint: <code>/api/chat</code></div>
-    </div>
-  </header>
+  <main class="app">
+    <section class="panel">
+      <header class="encabezado">
+        <h1>🚌 Bondi CABA</h1>
+        <p>Escribí de dónde salís y adónde vas, o tocá el mapa.</p>
+      </header>
 
-  <div class="actions">
-    <button class="chip" data-q="Más rápido">Más rápido</button>
-    <button class="chip" data-q="Menos caminata">Menos caminata</button>
-    <button class="chip" data-q="Sin trasbordos">Sin trasbordos</button>
-    <button class="chip" data-q="Ver próximas">Ver próximas</button>
-    <button class="chip" data-q="Guardar casa: Corrientes 800 CABA">Guardar casa</button>
-    <button class="chip" data-q="Usar casa a trabajo">Usar casa → trabajo</button>
-    <button class="chip" data-q="Ver casa">Ver casa</button>
-  </div>
+      <form id="formulario" class="formulario" autocomplete="off">
+        <label>
+          <span>Desde</span>
+          <div class="fila">
+            <input id="origen" placeholder="Corrientes 800, Obelisco, Cabildo y Juramento…" required />
+            <button type="button" id="ubicacion" class="icono" title="Usar mi ubicación">📍</button>
+          </div>
+        </label>
+        <label>
+          <span>Hasta</span>
+          <input id="destino" placeholder="Plaza Italia, Rivadavia 6300…" required />
+        </label>
+        <button type="submit" id="buscar" class="principal">Buscar colectivos</button>
+      </form>
 
-  <main class="wrap">
-    <div id="out"></div>
+      <p id="estado" class="estado" role="status">Cargando la red de colectivos…</p>
+      <div id="resultados" class="resultados"></div>
+
+      <footer class="pie">
+        <p>También en Telegram: <a href="https://t.me/bondicaba_bot" target="_blank" rel="noopener">@bondicaba_bot</a></p>
+        <p>Datos: GTFS de colectivos de <a href="https://data.buenosaires.gob.ar/dataset/colectivos-gtfs" target="_blank" rel="noopener">Buenos Aires Data</a> y lugares de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. Los tiempos son estimados.</p>
+        <p><a href="https://github.com/scheffan/chatbot_autobus_caba" target="_blank" rel="noopener">Código en GitHub</a></p>
+      </footer>
+    </section>
+    <section id="mapa" class="mapa" aria-label="Mapa"></section>
   </main>
 
-  <div class="composer">
-    <div class="composer-inner">
-      <div class="input">
-        <input id="text" autocomplete="off" placeholder="Escribí acá… Ej: ir de Corrientes 800 a Rivadavia 6300" />
-      </div>
-      <button id="send" class="send">Enviar</button>
-    </div>
-  </div>
-
-  <script>
-    const out   = document.getElementById('out');
-    const input = document.getElementById('text');
-    const send  = document.getElementById('send');
-
-    // Mensaje inicial
-    sys(`¡Hola! Soy tu asistente de colectivos.
-Decime algo como:
-• ir de Corrientes 800 CABA a Av. Rivadavia 6300 CABA
-• guardar casa: Corrientes 800 CABA
-• usar casa a trabajo
-• ver próximas`);
-
-    // Chips
-    document.querySelectorAll('.chip').forEach(ch => {
-      ch.addEventListener('click', () => {
-        input.value = ch.dataset.q || ch.textContent.trim();
-        doSend();
-      });
-    });
-
-    // Enter para enviar
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
-    });
-    send.addEventListener('click', doSend);
-
-    let isSending = false;
-
-    async function doSend(){
-      const t = input.value.trim();
-      if (!t || isSending) return;
-
-      isSending = true;
-      send.disabled = true;
-
-      user(t);
-      input.value = '';
-
-      const typing = typingIndicator();
-
-      try{
-        const r = await fetch('/api/chat', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ user_id:'web-user', text:t })
-        });
-
-        if(!r.ok){
-          throw new Error(`HTTP ${r.status}`);
-        }
-
-        const data = await r.json();
-        typing.remove();
-
-        // Texto del bot (con markdown-lite y espaciado por líneas)
-        bot(data.text || '…');
-
-        // Si viene audio, lo reproducimos
-        if (data.speech_path){
-          audioPlayer(data.speech_path);
-        }
-      }catch(err){
-        typing.remove();
-        errorBox(`Error llamando a /api/chat\n${err?.message || err}`);
-      }finally{
-        isSending = false;
-        send.disabled = false;
-        scrollBottom();
-      }
-    }
-
-    // Render helpers
-    function el(tag, cls, text){
-      const d = document.createElement(tag);
-      if (cls) d.className = cls;
-      if (text != null) d.textContent = text;
-      return d;
-    }
-
-    // --- markdown-lite: **negrita** + clases por línea para espaciado ---
-    function mdLite(source){
-      if (!source) return '';
-      // escapar HTML básico
-      let s = source.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // **texto** -> <strong>texto</strong>
-      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      // etiquetar líneas para dar aire a "Opción X" y "1) paso"
-      const lines = s.split('\n').map(line => {
-        let cls = 'line';
-        if (/^\s*Opción\s*\d+/i.test(line)) cls += ' option';
-        if (/^\s*\d+\)/.test(line)) cls += ' step';
-        return `<span class="${cls}">${line}</span>`;
-      });
-      return lines.join('<br>');
-    }
-
-    function msg(cls, text){
-      const m = el('div', `msg ${cls}`);
-      // solo cambiamos el render del bot; user/sys quedan igual
-      if (cls.includes('bot')) {
-        m.innerHTML = mdLite(text || '');
-      } else {
-        m.textContent = text;
-      }
-      out.appendChild(m);
-      scrollBottom();
-      return m;
-    }
-    function user(t){ return msg('me', t); }
-    function bot(t){ return msg('bot', t); }
-    function sys(t){ return msg('sys', t); }
-    function errorBox(t){ const m = bot(`⚠️ ${t}`); m.style.borderColor = 'rgba(255,107,107,.35)'; return m; }
-    function scrollBottom(){ requestAnimationFrame(()=> window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'})); }
-
-    function typingIndicator(){
-      const m = el('div','msg bot');
-      const row = el('div', 'typing');
-      row.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-      m.appendChild(row);
-      out.appendChild(m);
-      scrollBottom();
-      return m;
-    }
-
-    function audioPlayer(src){
-      const wrap = el('div','msg bot');
-      const title = el('h4', null, 'Audio');
-      const au = document.createElement('audio');
-      au.controls = true;
-      au.src = src; // el backend puede devolver ruta tipo sandbox:/ o pública
-      wrap.appendChild(title);
-      wrap.appendChild(au);
-      out.appendChild(wrap);
-    }
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

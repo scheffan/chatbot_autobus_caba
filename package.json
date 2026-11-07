@@ -1,0 +1,9 @@
+{
+  "name": "bondi-caba",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/motor/*.test.js",
+    "worker": "wrangler dev"
+  }
+}
