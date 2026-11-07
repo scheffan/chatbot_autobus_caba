@@ -1,0 +1,38 @@
+name: Sondeo de datos
+
+on:
+  push:
+    branches: [claude/project-thread-1ao83h]
+
+jobs:
+  sondeo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Buscar el GTFS en el portal de datos de la Ciudad
+        run: |
+          curl -sSL "https://data.buenosaires.gob.ar/api/3/action/package_show?id=colectivos-gtfs" -o paquete.json || true
+          head -c 3000 paquete.json; echo
+          python3 -c "import json;d=json.load(open('paquete.json'));[print(r.get('name'),r.get('format'),r.get('url'),r.get('last_modified')) for r in d['result']['resources']]" || true
+      - name: Bajar y mirar
+        run: |
+          url=$(python3 -c "import json;d=json.load(open('paquete.json'));print([r['url'] for r in d['result']['resources'] if r['url'].lower().endswith('.zip')][0])")
+          echo "URL: $url"
+          curl -sSL "$url" -o gtfs.zip
+          ls -la gtfs.zip
+          unzip -o -q gtfs.zip -d gtfs
+          ls -la gtfs
+          for f in gtfs/*.txt; do echo "== $f $(wc -l < $f) lineas"; head -3 "$f"; done
+          cut -d, -f1 gtfs/agency.txt | head -50
+          python3 - <<'P'
+          import csv
+          r=list(csv.DictReader(open('gtfs/routes.txt',encoding='utf-8-sig')))
+          print(len(r),'rutas'); print(r[:3])
+          from collections import Counter
+          print(Counter(x.get('agency_id') for x in r).most_common(5))
+          s=list(csv.DictReader(open('gtfs/stops.txt',encoding='utf-8-sig')))
+          lat=[float(x['stop_lat']) for x in s]; lon=[float(x['stop_lon']) for x in s]
+          print(len(s),'paradas', min(lat),max(lat),min(lon),max(lon))
+          P
+      - name: OpenStreetMap (Overpass)
+        run: |
+          curl -sS -m 120 "https://overpass-api.de/api/interpreter" --data-urlencode 'data=[out:json][timeout:60];(node["historic"="monument"](-34.705,-58.531,-34.526,-58.335););out 5;' | head -c 1500
