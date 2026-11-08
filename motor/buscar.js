@@ -21,7 +21,7 @@ export function frecuencia(recorrido, dia, hora) {
   const porHora = recorrido.frecuencia?.[dia];
   if (!porHora) return null;
   const n = porHora[hora % 24] + porHora[(hora + 1) % 24] * 0.5;
-  if (n < 0.5) return null;
+  if (n < 1) return null; // menos de un colectivo por hora: no lo ofrecemos
   const cada = 60 / (n / 1.5);
   return { cada: Math.max(1, Math.round(cada)), espera: Math.min(cada / 2, ESPERA_MAXIMA) };
 }

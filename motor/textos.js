@@ -12,10 +12,67 @@ function tituloPalabra(palabra, i, todas) {
   return p.charAt(0).toUpperCase() + p.slice(1);
 }
 
+// En el GTFS de la Ciudad muchas calles vienen al revés ("PERON EVA",
+// "ALBERDI JUAN BAUTISTA"). Las más comunes van con su nombre de todos los días.
+const CALLES = {
+  'PERON EVA': 'Eva Perón',
+  'PERON JUAN DOMINGO': 'Perón',
+  'ALBERDI JUAN BAUTISTA': 'Juan Bautista Alberdi',
+  'GARAY JUAN DE': 'Juan de Garay',
+  'RAMOS MEJIA JOSE MARIA': 'Ramos Mejía',
+  'JUSTO JUAN B.': 'Juan B. Justo',
+  'PASEO COLON': 'Paseo Colón',
+  'MONTES DE OCA MANUEL': 'Montes de Oca',
+  'FIGUEROA ALCORTA': 'Figueroa Alcorta',
+  'CAMPOS LUIS M.': 'Luis María Campos',
+  'BEIRO FRANCISCO': 'Francisco Beiró',
+  'SCALABRINI ORTIZ RAUL': 'Scalabrini Ortiz',
+  'LACROZE FEDERICO': 'Federico Lacroze',
+  'FERNANDEZ DE LA CRUZ F.': 'Fernández de la Cruz',
+  'ROCA': 'Roca',
+  'ARTIGAS JOSE GERVASIO': 'Artigas',
+  'ALCORTA AMANCIO': 'Amancio Alcorta',
+  'DELLEPIANE LUIS': 'Dellepiane',
+  'BALBIN RICARDO': 'Ricardo Balbín',
+  'ALEM LEANDRO N.': 'Leandro N. Alem',
+  'BARCO CENTENERA DEL': 'Del Barco Centenera',
+  'MORENO JOSE MARIA': 'José María Moreno',
+  'MAGARINOS CERVANTES A.': 'Magariños Cervantes',
+  'CARRIL SALVADOR MARIA DEL': 'Salvador María del Carril',
+  'ARANGUREN JUAN F.': 'Aranguren',
+  'YRIGOYEN HIPOLITO': 'Hipólito Yrigoyen',
+  'SAENZ PENA ROQUE DIAGONAL NORTE': 'Diagonal Norte',
+  'SAENZ PENA ROQUE': 'Roque Sáenz Peña',
+  'MARTINEZ ZUVIRIA GUSTAVO': 'Martínez Zuviría',
+  'BRIN MINISTRO': 'Ministro Brin',
+  'OBLIGADO RAFAEL AV.COSTANERA': 'Costanera Rafael Obligado',
+  'DIAZ VELEZ': 'Díaz Vélez',
+  'ALVAREZ THOMAS': 'Álvarez Thomas',
+  'VELEZ SARSFIELD': 'Vélez Sarsfield',
+  'ENTRE RIOS': 'Entre Ríos',
+  'CORDOBA': 'Córdoba',
+  'GAONA': 'Gaona',
+  'MEXICO': 'México',
+  'TUCUMAN': 'Tucumán',
+  'PERU': 'Perú',
+  'MAIPU': 'Maipú',
+  'CONSTITUCION': 'Constitución',
+  'BOLIVAR': 'Bolívar',
+  'JUJUY': 'Jujuy',
+  'PUEYRREDON': 'Pueyrredón',
+  'CALLAO': 'Callao',
+  'SAENZ': 'Sáenz',
+};
+
+function sinTildes(texto) {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+}
+
 // "AVENIDA EVA PERÓN 1249-1299" -> "Av. Eva Perón 1249"
 // "1079 PAZ GRAL. AV." -> "Av. Gral. Paz 1079"
 export function nombreDeParada(crudo) {
-  let texto = (crudo || '').replace(/\s+/g, ' ').trim();
+  // El GTFS perdió las eñes: "PE?A" -> "PEÑA".
+  let texto = (crudo || '').replace(/(\p{L})\?(\p{L})/gu, '$1Ñ$2').replace(/\s+/g, ' ').trim();
   let numero = '';
   const alPrincipio = texto.match(/^(\d+)\s+(.*)$/);
   if (alPrincipio) {
@@ -40,7 +97,10 @@ export function nombreDeParada(crudo) {
   const palabras = texto.split(' ');
   const titulos = [];
   while (palabras.length > 1 && TITULOS.test(palabras[palabras.length - 1])) titulos.unshift(palabras.pop());
-  const nombre = [...titulos, ...palabras].map((p, i, todas) => tituloPalabra(p, i, todas)).join(' ');
+  const conocida = CALLES[sinTildes(palabras.join(' ')).replace(/\s+(PRES\.|DR\.|GRAL\.|TTE\.)(?=\s|$)/g, '')];
+  let nombre = conocida || [...titulos, ...palabras].map((p, i, todas) => tituloPalabra(p, i, todas)).join(' ');
+  // "Av. Del Libertador" -> "Av. del Libertador"
+  if (avenida) nombre = nombre.replace(/^(De|Del|De la|De los|De las) /, (m) => m.toLowerCase());
   return `${avenida ? 'Av. ' : ''}${nombre}${numero ? ` ${numero}` : ''}`.trim();
 }
 

@@ -43,6 +43,8 @@ def test_hacia_donde():
     assert cr.hacia_donde("B - a Est. Mitre") == "Est. Mitre"
     assert cr.hacia_donde("Ramal 2: a Retiro") == "Retiro"
     assert cr.hacia_donde("a Barracas - IDA") == ""
+    assert cr.hacia_donde("2 hacia Berazategui") == "Berazategui"
+    assert cr.hacia_donde("12 - a Once") == "Once"
 
 
 def test_construir_red(tmp_path):
