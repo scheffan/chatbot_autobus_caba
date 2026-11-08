@@ -9,6 +9,12 @@ test('nombres de paradas legibles', () => {
   assert.equal(nombreDeParada('4273 LAS HERAS GENERAL AV.'), 'Av. General Las Heras 4273');
   assert.equal(nombreDeParada('1053 BROWN ALTE. AV.'), 'Av. Alte. Brown 1053');
   assert.equal(nombreDeParada('300 PLAZA DE LOS VIRREYES'), 'Plaza de los Virreyes 300');
+  // Calles que el GTFS trae al revés o sin eñe.
+  assert.equal(nombreDeParada('819 SAENZ PE?A ROQUE PRES. DIAGONAL NORTE'), 'Diagonal Norte 819');
+  assert.equal(nombreDeParada('1041 PERON JUAN DOMINGO TTE. GENERAL'), 'Perón 1041');
+  assert.equal(nombreDeParada('1135 GARAY JUAN DE AV.'), 'Av. Juan de Garay 1135');
+  assert.equal(nombreDeParada('759 DEL LIBERTADOR AV.'), 'Av. del Libertador 759');
+  assert.equal(nombreDeParada('526 PERU'), 'Perú 526');
 });
 
 test('cuadras', () => {

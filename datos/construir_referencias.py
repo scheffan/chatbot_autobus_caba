@@ -114,6 +114,10 @@ def procesar(osm: dict) -> list:
         if lat is None or lon is None or not etiquetas.get("name"):
             continue
         tipo = tipo_de(etiquetas)
+        # Bustos y placas con nombre de persona no sirven para ubicarse:
+        # de monumentos y atracciones solo dejamos los conocidos (con Wikidata).
+        if tipo in ("monumento", "atraccion") and not etiquetas.get("wikidata"):
+            continue
         nombre = nombre_lindo(etiquetas, tipo)
         clave = (nombre.lower(), round(lat, 3), round(lon, 3))
         if clave in vistos:

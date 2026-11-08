@@ -18,7 +18,8 @@ async function porUsig(texto, pedir) {
   const d = datos?.direccionesNormalizadas?.[0];
   const c = d?.coordenadas;
   if (!c || c.x === undefined) return null;
-  return { lat: Number(c.y), lon: Number(c.x), nombre: d.direccion || texto, fuente: 'usig' };
+  // Mostramos la dirección como la escribió la persona, no "CORRIENTES AV. 800, CABA".
+  return { lat: Number(c.y), lon: Number(c.x), nombre: texto, fuente: 'usig' };
 }
 
 async function porNominatim(texto, pedir) {
@@ -28,7 +29,7 @@ async function porNominatim(texto, pedir) {
   if (!respuesta.ok) return null;
   const [d] = await respuesta.json();
   if (!d) return null;
-  return { lat: Number(d.lat), lon: Number(d.lon), nombre: d.display_name.split(',').slice(0, 2).join(','), fuente: 'nominatim' };
+  return { lat: Number(d.lat), lon: Number(d.lon), nombre: texto, fuente: 'nominatim' };
 }
 
 export async function geocodificar(texto, { red, pedir = fetch } = {}) {

@@ -26,8 +26,9 @@ def test_nombre_lindo():
 
 def test_procesar_saca_repetidos_y_sin_nombre():
     osm = {"elements": [
-        {"type": "node", "lat": -34.6037, "lon": -58.3816, "tags": {"name": "Obelisco", "historic": "monument"}},
-        {"type": "way", "center": {"lat": -34.60371, "lon": -58.38161}, "tags": {"name": "Obelisco", "historic": "monument"}},
+        {"type": "node", "lat": -34.6037, "lon": -58.3816, "tags": {"name": "Obelisco", "historic": "monument", "wikidata": "Q1"}},
+        {"type": "node", "lat": -34.61, "lon": -58.39, "tags": {"name": "Provincia de Salta", "historic": "memorial"}},
+        {"type": "way", "center": {"lat": -34.60371, "lon": -58.38161}, "tags": {"name": "Obelisco", "historic": "monument", "wikidata": "Q1"}},
         {"type": "node", "lat": -34.6, "lon": -58.4, "tags": {"amenity": "bank"}},
     ]}
     assert cref.procesar(osm) == [[-34.6037, -58.3816, "el Obelisco", "monumento"]]

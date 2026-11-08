@@ -84,8 +84,9 @@ def hacia_donde(cartel: str) -> str:
     if re.search(r"-\s*(IDA|VUELTA)\s*$", cartel, re.IGNORECASE):
         return ""
     limpio = re.sub(r"^\s*Ramal\s+\S+?\s*[:-]\s*", "", cartel, flags=re.IGNORECASE)
-    limpio = re.sub(r"^\s*[A-ZÑ]?\s*-\s*", "", limpio)
-    limpio = re.sub(r"^a\s+", "", limpio.strip(), flags=re.IGNORECASE)
+    limpio = re.sub(r"^\s*[A-ZÑ0-9]{0,2}\s*-\s*", "", limpio)
+    limpio = re.sub(r"^\s*[A-ZÑ0-9]{1,2}\s+(?=(?:a|hacia)\s)", "", limpio)
+    limpio = re.sub(r"^(?:a|hacia)\s+", "", limpio.strip(), flags=re.IGNORECASE)
     return re.sub(r"\s+", " ", limpio).strip()
 
 

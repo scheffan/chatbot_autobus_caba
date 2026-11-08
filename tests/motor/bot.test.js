@@ -60,7 +60,7 @@ test('usa el normalizador de la Ciudad para direcciones', async () => {
   };
   const r = await responder(update({ text: 'de Corrientes 800 a Plaza Italia' }), { ...opciones, pedir });
   assert.ok(pedidos[0].startsWith('https://servicios.usig.buenosaires.gob.ar/normalizar/?direccion=Corrientes%20800'));
-  assert.match(r.text, /De CORRIENTES AV\. 800 a la Plaza Italia/);
+  assert.match(r.text, /De Corrientes 800 a la Plaza Italia/);
 });
 
 test('escapa el HTML de lo que escribe la gente', () => {
