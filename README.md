@@ -8,6 +8,8 @@
 [![Tests](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/tests.yml/badge.svg)](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/tests.yml)
 [![Publicar](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/publicar.yml/badge.svg)](https://github.com/scheffan/chatbot_autobus_caba/actions/workflows/publicar.yml)
 
+![El bot en Telegram y la web con el recorrido en el mapa](docs/capturas/bondi-telegram-y-web.jpg)
+
 ## Cómo se usa
 
 En Telegram le escribís como le hablarías a alguien:
