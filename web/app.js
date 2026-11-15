@@ -45,6 +45,7 @@ async function resolver(tipo) {
   if (puntos[tipo] && puntos[tipo].texto === valor) return puntos[tipo];
   const lugar = await geocodificar(valor, { red });
   if (!lugar) throw new Error(`No encontré "${valor}". Probá con calle y altura, una esquina ("Corrientes y Callao") o tocá el mapa.`);
+  if (lugar.ambiguo) throw new Error(`"${valor}" es una calle${lugar.zona ? ` de ${lugar.zona}` : ''}: sumale la altura o una esquina. Si es otra ciudad, está fuera de la zona del buscador.`);
   puntos[tipo] = { ...lugar, texto: valor };
   return puntos[tipo];
 }

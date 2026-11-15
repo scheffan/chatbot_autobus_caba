@@ -65,6 +65,26 @@ export function armarRespuesta(red, resultado, origen, destino) {
   return lineas.join('\n');
 }
 
+// "Mar del Plata" puede ser la ciudad o una calle de Floresta: no armamos un viaje a ciegas.
+export function avisoAmbiguo(lugar) {
+  const nombre = escapar(lugar.nombre);
+  return [
+    `🤔 Encontré una calle llamada "${nombre}"${lugar.zona ? ` en ${escapar(lugar.zona)}` : ''}, pero necesito la altura o una esquina (por ejemplo, <i>${nombre} 1200</i>).`,
+    '',
+    'Si buscás otra ciudad, solo cubro los colectivos de la Ciudad de Buenos Aires y alrededores, así que ese viaje está fuera de mi zona.',
+  ].join('\n');
+}
+
+// Si corregimos un error de tipeo, lo contamos para que la persona pueda verificarlo.
+export function agregarCorrecciones(texto, puntos) {
+  const notas = puntos
+    .filter((p) => p && p.corregidoDe)
+    .map((p) => `✏️ Entendí <i>${escapar(p.nombre)}</i> (escribiste <i>${escapar(p.corregidoDe)}</i>).`);
+  if (!notas.length) return texto;
+  const [titulo, ...resto] = texto.split('\n');
+  return [titulo, ...notas, ...resto].join('\n');
+}
+
 export async function responder(update, { red, pedir = fetch, urlWeb, ahora = ahoraEnBuenosAires }) {
   const m = update.message;
   if (!m || !m.chat) return null;
@@ -104,6 +124,8 @@ export async function responder(update, { red, pedir = fetch, urlWeb, ahora = ah
   if (faltan.length) {
     return mensaje(chatId, `No encontré ${faltan.join(' ni ')}. Probá con calle y altura (<i>Corrientes 800</i>), una esquina (<i>Corrientes y Callao</i>) o un lugar conocido.`);
   }
+  const ambiguo = [origen, destino].find((p) => p.ambiguo);
+  if (ambiguo) return mensaje(chatId, avisoAmbiguo(ambiguo));
   if (distancia(origen.lat, origen.lon, destino.lat, destino.lon) > MAX_DISTANCIA) {
     return mensaje(chatId, 'Esos dos puntos están muy lejos entre sí. ¿Seguro que son del AMBA?');
   }
@@ -113,5 +135,5 @@ export async function responder(update, { red, pedir = fetch, urlWeb, ahora = ah
   const extra = urlWeb && resultado.opciones.length
     ? { reply_markup: { inline_keyboard: [[{ text: '🗺️ Ver en el mapa', url: enlaceMapa(urlWeb, origen, destino) }]] } }
     : {};
-  return mensaje(chatId, armarRespuesta(red, resultado, origen, destino), extra);
+  return mensaje(chatId, agregarCorrecciones(armarRespuesta(red, resultado, origen, destino), [origen, destino]), extra);
 }
